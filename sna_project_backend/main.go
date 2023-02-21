@@ -1,27 +1,26 @@
 package main
 
 import (
-	"net/http"
-	"oldegg_backend/config"
-	"oldegg_backend/route"
-
 	"github.com/gin-gonic/gin"
-	"github.com/rs/cors"
+	"github.com/jayjayjay-jj/SNA/controller"
+	"github.com/jayjayjay-jj/SNA/initializers"
+	"github.com/jayjayjay-jj/SNA/middleware"
 )
 
-func main() {
 
-	config.Connect()
+func init(){
+	initializers.LoadEnvVariables()
+	initializers.ConnectDB()
+	initializers.SyncDatabase()
+}
 
-	options := cors.Options{
-		AllowedOrigins:   []string{"http://localhost:3000"},
-		AllowedMethods:   []string{"GET", "POST", "PATCH", "PUT", "DEELTE", "OPTIONS"},
-		AllowCredentials: true,
-	}
+func main(){
+	
+	r := gin.Default()
+	r.Use(middleware.SetCORSMiddleware())
 
-	router := gin.New()
-
-	route.UserRoute(router)
-
-	http.ListenAndServe(":8080", cors.New(options).Handler(router))
+	r.POST("/signup", controller.SignUp )
+	r.POST("/login", controller.Login )
+	r.GET("/ping", middleware.RequireAuth,controller.Ping )
+	r.Run() 
 }

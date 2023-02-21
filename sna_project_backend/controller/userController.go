@@ -1,88 +1,136 @@
 package controller
 
 import (
-	"oldegg_backend/config"
-	"oldegg_backend/model"
+	"net/http"
 	"os"
 	"time"
 
 	"github.com/gin-gonic/gin"
-	"github.com/golang-jwt/jwt"
+	"github.com/golang-jwt/jwt/v4"
+	"github.com/jayjayjay-jj/SNA/initializers"
+	"github.com/jayjayjay-jj/SNA/model"
 	"golang.org/x/crypto/bcrypt"
 )
 
-func SignUp(ctx *gin.Context) {
-	var newUser model.User
-	ctx.ShouldBindJSON(&newUser)
-	ctx.JSON(200, newUser)
+func SignUp(c *gin.Context) {
+	//requested data
 
-	var countEmail int64 = 0
-	config.DB.Model(model.User{}).Where("email = ?", newUser.Email).Count(&countEmail)
-	if countEmail != 0 {
-		ctx.String(200, "Email is not unique")
-
-		return
+	var req struct {
+		First_name string
+		Last_name string
+		Email string 
+		Phone string
+		Password string
 	}
 
-	var countPhoneNumber int64 = 0
-	config.DB.Model(model.User{}).Where("mobile_phone_number = ?", newUser.MobilePhoneNumber).Count(&countPhoneNumber)
-	if countPhoneNumber != 0 {
-		ctx.String(200, "Phone Number already used!")
-
-		return
+	if c.Bind(&req) != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error": "Failed to read body",
+		})
+		return;
 	}
 
-	// Minimum length for password is 8
-	hash, error := bcrypt.GenerateFromPassword([]byte(newUser.Password), 8)
+	//password hashing
+	hashed, err := bcrypt.GenerateFromPassword([]byte(req.Password),10)
 
-	if error != nil {
-		ctx.String(200, "Password hashing failed")
-		return
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error": "Failed to hash password",
+		})
+		return;
 	}
 
-	newUser.Password = string(hash)
+	//construct user
+	user := model.User{First_name:req.First_name, Last_name:req.Last_name, Email:req.Email, Phone:req.Phone, Password: string(hashed)}
 
-	config.DB.Create(&newUser)
-	ctx.JSON(200, newUser)
-}
+	result := initializers.DB.Create(&user)
 
-func SignIn(ctx *gin.Context) {
-	var attemptUserLogin, userCreated model.User
-	ctx.ShouldBindJSON(&attemptUserLogin)
-
-	config.DB.First(&userCreated, "email = ?", attemptUserLogin.Email)
-	if userCreated.ID == 0 {
-		ctx.String(200, "Email not found!")
-
-		return
+	if result.Error != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error": "Failed to create user",
+		})
+		return;
 	}
 
-	error := bcrypt.CompareHashAndPassword([]byte(userCreated.Password), []byte(attemptUserLogin.Password))
-	if error != nil {
-		ctx.String(200, "Password not found!")
-		return
-	}
-	if userCreated.Status != "Active" {
-		ctx.String(200, "HAHAHAHAHAHHAHA You're banned!")
-		return
-	}
-	// Generate JWT
-	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
-		"subject": userCreated.Email,
-		"expire":  time.Now().Add(time.Hour * 72).Unix(),
+	//response
+	c.JSON(http.StatusOK, gin.H{
+		"email" : req.Email,
 	})
 
-	tokenString, error := token.SignedString([]byte(os.Getenv("key")))
-	if error != nil {
-		ctx.String(200, "LMAO JWT failed!")
-		return
-	}
-
-	ctx.String(200, tokenString)
 }
 
-func Authenticate(ctx *gin.Context) {
-	currUser, _ := ctx.Get("currentUser")
+func Login(c *gin.Context) {
+	//requested data
+	var req struct {
+		Email string 
+		Password string
+	}
+	// make sure its JSON
+	if c.Bind(&req) != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error": "Failed to read body",
+		})
+		return;
+	}
 
-	ctx.JSON(200, currUser)
+	//check user 
+	var user model.User
+	initializers.DB.First(&user, "email = ?", req.Email)
+	
+
+	if user.ID == 0 {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error": "Invalid account",
+		})
+		return;
+	}
+
+	//compare hash and password
+	err := bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(req.Password))
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error": "Invalid email / pass",
+		})
+		return;
+	}
+	
+	//create jwt
+
+	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
+		"sbj" : user.ID, //subject
+		"exp" : time.Now().Add(time.Hour * 24 * 30).Unix(),  //expiration
+	})
+
+	//sign and get
+	generatedToken, err := token.SignedString([]byte(os.Getenv("SECRET")))
+
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error": "Failed creating token",
+		})
+		return;
+	}
+	//auto set cookie
+	c.SetSameSite(http.SameSiteLaxMode)
+	
+	
+	//expiration time
+	exp := 3600*24
+	c.SetCookie("token", generatedToken, exp, "", "", false, false)
+
+	//response
+	c.JSON(http.StatusOK, gin.H{
+		"token" : generatedToken,
+		"expiresin" : exp,
+	})
+}
+
+func Ping(c *gin.Context){
+	//get curr user
+	user,_ := c.Get("user")
+
+	c.JSON(http.StatusOK, gin.H{
+		"message" : "You are logged in",
+		"user" : user,
+	})
 }
