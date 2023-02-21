@@ -1,5 +1,7 @@
 import InputField from "@/pages/component/InputField";
 import style from "@/styles/account/SignUp.module.scss"
+import User from "@/types/User";
+import Link from "next/link";
 import { useRouter } from "next/router";
 import { useState } from "react";
 
@@ -42,13 +44,28 @@ const SignIn = () => {
 
     return ( 
         <>
-            <form className={style.index}>
-                <InputField required value={name} onChange={setName} placeholder="Name" />
-                <InputField required value={email} onChange={setEmail} placeholder="Email" email />
-                <InputField required value={number} onChange={setNumber} placeholder="Phone Number" number />
-                <InputField required value={password} onChange={setPassword} placeholder="Password" password />
-                <button>Sign Up</button>
-            </form>
+            <div className={style.index}>
+                
+
+                <form className={style.index}>
+                    <div className={style.title}>
+                        <Link href="/account/sign-up" className={style.title}>Register</Link>
+                    </div>
+
+                    <InputField required value={name} onChange={setName} placeholder="Name" />
+                    <InputField required value={email} onChange={setEmail} placeholder="Email" email />
+                    <InputField required value={number} onChange={setNumber} placeholder="Phone Number" number />
+                    <InputField required value={password} onChange={setPassword} placeholder="Password" password />
+                    <button className={style.button}>SIGN UP</button>
+
+                    <div>
+                        Already have an account?&nbsp;
+                        <Link href="/account/sign-in" className={style.text}>Sign In</Link>
+                    </div>
+                </form>
+
+                
+            </div> 
         </>
     );
 }

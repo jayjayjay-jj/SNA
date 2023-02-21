@@ -1,6 +1,7 @@
 import InputField from "@/pages/component/InputField";
 import style from "@/styles/account/SignIn.module.scss"
 import User from "@/types/User";
+import Link from "next/link";
 import { useState } from "react";
 
 const SignIn = () => {
@@ -40,11 +41,23 @@ const SignIn = () => {
 
     return ( 
         <>
-            <form className={style.index}>
-                <InputField required value={email} onChange={setEmail} placeholder="Email" email />
-                <InputField required value={password} onChange={setPassword} placeholder="Password" password />
-                <button>Sign In</button>
-            </form>
+            <div className={style.index}>
+                <form className={style.index}>
+                    <div className={style.title}>
+                        <Link href="/account/sign-in" className={style.title}>Login</Link>
+                    </div>
+
+                    <InputField required value={email} onChange={setEmail} placeholder="Email" email />
+                    <InputField required value={password} onChange={setPassword} placeholder="Password" password />
+                    <button className={style.button}>SIGN IN</button>
+                    <div>
+                    Have no account?&nbsp;
+                    <Link href="/account/sign-up" className={style.text}>Sign Up</Link>
+                </div>
+                </form>
+
+                
+            </div>
         </>
     );
 }
