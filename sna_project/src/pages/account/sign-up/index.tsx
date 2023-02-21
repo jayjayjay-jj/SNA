@@ -1,5 +1,6 @@
 import InputField from "@/pages/component/InputField";
 import style from "@/styles/account/SignUp.module.scss"
+import { useRouter } from "next/router";
 import { useState } from "react";
 
 const SignIn = () => {
@@ -7,6 +8,37 @@ const SignIn = () => {
     const [email, setEmail] = useState('');
     const [number, setNumber] = useState('');
     const [password, setPassword] = useState('');
+
+    const router = useRouter()
+
+    const handleFormSubmit = async (e:any) => {
+        e.preventDefault();
+
+        const newUser:User = {
+            first_name: firstName,
+            last_name: lastName,
+            email: email,
+            mobile_phone_number: mobilePhoneNumber,
+            password: password,
+            role_id: 1,
+            subscribed: true ,
+            status: "Active"
+        }
+
+        console.log(firstName)
+        console.log(lastName)
+        console.log(email)
+        console.log(mobilePhoneNumber)
+        console.log(password)
+
+        const response = await SignUp(newUser)
+        if(response === 404) {
+            alert("Error in sign-up")
+        } else {
+            alert("Sign-up successfull! Account created.")
+            router.push("/sign-in")
+        }
+    }
 
     return ( 
         <>
