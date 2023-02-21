@@ -22,7 +22,7 @@ const SignIn = () => {
         email: email,
         mobile_phone_number: number,
         password: password,
-        role_id: 1
+        role_id: 1,
     };
 
     console.log(name);
@@ -33,16 +33,16 @@ const SignIn = () => {
     const response = await SignUp(newUser);
     if (response === 404) {
         alert("Error in sign-up");
-    } else {
+        } else {
         alert("Sign-up successfull! Account created.");
-        router.push("/sign-in");
+        router.push("/account/sign-in");
     }
 };
 
 return (
     <>
         <div className={style.index}>
-            <form className={style.index}>
+            <form className={style.index} onSubmit={handleFormSubmit}>
             <div className={style.title}>
                 <Link href="/account/sign-up" className={style.title}>
                 Register

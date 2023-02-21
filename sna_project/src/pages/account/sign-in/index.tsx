@@ -1,65 +1,81 @@
 import InputField from "@/pages/component/InputField";
-import style from "@/styles/account/SignIn.module.scss"
+import style from "@/styles/account/SignIn.module.scss";
 import User from "@/types/User";
+import setCookie from "@/util/setCookie";
 import Link from "next/link";
+import { useRouter } from "next/router";
 import { useState } from "react";
+import SignIn from "@/api/sign-in";
 
-const SignIn = () => {
-    const [email, setEmail] = useState('')
-    const [password, setPassword] = useState('')
+const SignInPage = () => {
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
 
-    const onFormSubmitted = async (e:any) => {
-        e.preventDefault();
+  const route = useRouter();
 
-        console.log(email)
-        console.log(password)
+  const onFormSubmitted = async (e: any) => {
+    e.preventDefault();
 
-        const userAttempt:User = {
-            email: email,
-            password: password
-        }
+    console.log(email);
+    console.log(password);
 
-        const response = await SignIn(userAttempt)
-        // console.log("Response: " + response)
-        if(response === 404) {
-            alert("Sign-In Failed!")
+    const userAttempt: User = {
+      email: email,
+      password: password,
+    };
 
-        } else if(response === "Email not found!") {
-            alert("Invalid Email!")
+    const response = await SignIn(userAttempt);
+    // console.log("Response: " + response)
+    if (response === 404) {
+      alert("Sign-In Failed!");
+    } else if (response === "Email not found!") {
+      alert("Invalid Email!");
+    } else if (response === "Password not found!") {
+      alert("Invalid Password!");
+    } else {
+      alert("Sign-In Success!");
+      console.log(response);
 
-        } else if(response === "Password not found!") {
-            alert("Invalid Password!") 
-        
-        } else {
-            alert("Sign-In Success!")
-            console.log(response)
-
-            setCookie("AuthenticationCookie", response, 2)
-            route.push("/")
-        }
+      setCookie("AuthenticationCookie", response, 2);
+      route.push("/");
     }
+  };
 
-    return ( 
-        <>
-            <div className={style.index}>
-                <form className={style.index}>
-                    <div className={style.title}>
-                        <Link href="/account/sign-in" className={style.title}>Login</Link>
-                    </div>
+  return (
+    <>
+      <div className={style.index}>
+        <form className={style.index} onSubmit={onFormSubmitted}>
+          <div className={style.title}>
+            <Link href="/account/sign-in" className={style.title}>
+              Login
+            </Link>
+          </div>
 
-                    <InputField required value={email} onChange={setEmail} placeholder="Email" email />
-                    <InputField required value={password} onChange={setPassword} placeholder="Password" password />
-                    <button className={style.button}>SIGN IN</button>
-                    <div>
-                    Have no account?&nbsp;
-                    <Link href="/account/sign-up" className={style.text}>Sign Up</Link>
-                </div>
-                </form>
+          <InputField
+            required
+            value={email}
+            onChange={setEmail}
+            placeholder="Email"
+            email
+          />
+          <InputField
+            required
+            value={password}
+            onChange={setPassword}
+            placeholder="Password"
+            password
+          />
+          <button className={style.button}>SIGN IN</button>
+          <div>
+            Have no account?&nbsp;
+            <Link href="/account/sign-up" className={style.text}>
+              Sign Up
+            </Link>
+          </div>
+        </form>
+      </div>
+    </>
+  );
+};
 
-                
-            </div>
-        </>
-    );
-}
-
-export default SignIn;
+export default SignInPage;
