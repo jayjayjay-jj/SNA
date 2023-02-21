@@ -1,7 +1,7 @@
 package config
 
 import (
-	"oldegg_backend/model"
+	"all/model"
 
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
@@ -16,7 +16,7 @@ func migrate() {
 
 func Connect() {
 
-	con := "host=localhost user=postgres password=prk dbname=oldEgg port=5432 TimeZone=Asia/Shanghai"
+	con := "host=localhost user=postgres password=prk dbname=SNA port=5432 TimeZone=Asia/Shanghai"
 	database, error := gorm.Open(postgres.Open(con), &gorm.Config{})
 
 	if error != nil {

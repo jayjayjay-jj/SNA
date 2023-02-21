@@ -1,13 +1,10 @@
 package controller
 
 import (
-	"oldegg_backend/config"
-	"oldegg_backend/model"
-	"os"
-	"time"
+	"all/config"
+	"all/model"
 
 	"github.com/gin-gonic/gin"
-	"github.com/golang-jwt/jwt"
 	"golang.org/x/crypto/bcrypt"
 )
 
@@ -62,27 +59,4 @@ func SignIn(ctx *gin.Context) {
 		ctx.String(200, "Password not found!")
 		return
 	}
-	if userCreated.Status != "Active" {
-		ctx.String(200, "HAHAHAHAHAHHAHA You're banned!")
-		return
-	}
-	// Generate JWT
-	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
-		"subject": userCreated.Email,
-		"expire":  time.Now().Add(time.Hour * 72).Unix(),
-	})
-
-	tokenString, error := token.SignedString([]byte(os.Getenv("key")))
-	if error != nil {
-		ctx.String(200, "LMAO JWT failed!")
-		return
-	}
-
-	ctx.String(200, tokenString)
-}
-
-func Authenticate(ctx *gin.Context) {
-	currUser, _ := ctx.Get("currentUser")
-
-	ctx.JSON(200, currUser)
 }

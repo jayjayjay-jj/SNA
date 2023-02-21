@@ -1,9 +1,9 @@
 package main
 
 import (
+	"all/config"
+	"all/route"
 	"net/http"
-	"oldegg_backend/config"
-	"oldegg_backend/route"
 
 	"github.com/gin-gonic/gin"
 	"github.com/rs/cors"
