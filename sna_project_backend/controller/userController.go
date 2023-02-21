@@ -75,5 +75,4 @@ func SignIn(ctx *gin.Context) {
 	}
 
 	ctx.String(200, tokenString)
-
 }
